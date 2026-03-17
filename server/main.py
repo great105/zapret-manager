@@ -71,10 +71,17 @@ def submit_diagnostics(report: DiagnosticReport, db: Session = Depends(get_db)):
     Клиент отправляет результаты диагностики.
     Сервер генерирует и возвращает конфигурацию winws2.
     """
-    # Проверяем, что клиент зарегистрирован
+    # Находим или автоматически регистрируем клиента
     client = db.query(Client).filter(Client.id == report.client_id).first()
     if not client:
-        raise HTTPException(status_code=404, detail="Клиент не найден. Сначала зарегистрируйтесь.")
+        client = Client(
+            id=report.client_id,
+            os_version="auto-registered",
+            hostname="unknown",
+            created_at=datetime.utcnow(),
+            last_seen=datetime.utcnow(),
+        )
+        db.add(client)
 
     # Обновляем информацию о клиенте
     client.isp_name = report.isp.isp_name

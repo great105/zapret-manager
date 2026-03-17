@@ -1,79 +1,93 @@
 # Zapret Manager
 
-## Описание проекта
-
 Система автоматического обхода интернет-блокировок на базе zapret2 (winws2).
-Клиент-серверная архитектура: пользователь ставит один .exe, нажимает кнопку — всё работает.
+Пользователь ставит один .exe, нажимает кнопку — всё работает.
 
 ## Архитектура
 
-### Клиент (`client/`)
-- **Python + customtkinter** — GUI с тёмной темой
-- **PyInstaller** — сборка в один .exe с встроенными бинарниками zapret2
-- Автоматическое повышение прав (UAC) при запуске
+### Клиент v2 — Go + Wails (`client-go/`) — ОСНОВНОЙ
+- **Go + Wails v2** — нативный .exe 14 МБ с WebView2 UI
+- Бинарники zapret2 встроены через `go:embed`
 - Всё хранится в `%LOCALAPPDATA%\ZapretManager\`
-- Автообновление приложения и бинарников
+- Автопроверка обновлений при запуске
+
+### Клиент v1 — Python (`client/`) — УСТАРЕВШИЙ
+- Python + customtkinter + PyInstaller (38 МБ)
+- Оставлен для справки, не развивается
 
 ### Сервер (`server/`)
-- **Python + FastAPI + SQLite**
+- **Python + FastAPI + SQLite** на VPS 5.42.120.247:8000
 - Принимает диагностику → подбирает стратегию обхода по ISP
 - Раздаёт конфиги, бинарники, обновления
-- `versions.json` — управление версиями для обновлений
+- Автоматически регистрирует неизвестных клиентов
 
 ## Ключевые файлы
 
-### Клиент
+### Go клиент (`client-go/`)
 | Файл | Назначение |
 |------|-----------|
-| `main.py` | Точка входа, UAC elevation |
-| `gui.py` | GUI, баннер обновлений |
-| `diagnostics.py` | Определение ISP, проверка DNS/TCP/TLS |
-| `zapret_manager.py` | Извлечение бинарников, запуск winws2 |
-| `updater.py` | Автообновление app + binaries |
-| `api_client.py` | HTTP-клиент для сервера |
-| `version.py` | Константы версий |
-| `download_zapret2.py` | Скачивание бинарников с GitHub (для сборки) |
-| `build.bat` | Сборка .exe (скачивает zapret2 + PyInstaller) |
+| `main.go` | Wails app, окно, embed assets |
+| `app.go` | Главная логика: StartBypass, StopBypass |
+| `diagnostics.go` | ISP detection, DNS/TCP/TLS проверки |
+| `zapret.go` | Извлечение бинарников, запуск/остановка winws2 |
+| `api.go` | HTTP-клиент к серверу |
+| `updater.go` | Проверка обновлений |
+| `services.go` | Список 15 заблокированных сервисов |
+| `frontend/` | HTML/CSS/JS — тёмная тема |
+| `binaries/` | winws2.exe, WinDivert, cygwin1.dll, lua-скрипты |
 
-### Сервер
+### Сервер (`server/`)
 | Файл | Назначение |
 |------|-----------|
-| `main.py` | FastAPI endpoints |
-| `config_engine.py` | Генерация winws2 конфигов по ISP |
-| `database.py` | SQLAlchemy модели (clients, diagnostics, configs) |
+| `main.py` | FastAPI: /api/register, /api/diagnostics, /api/update/* |
+| `config_engine.py` | Генерация winws2 аргументов по ISP |
+| `database.py` | SQLAlchemy: clients, diagnostics, configs |
 | `models.py` | Pydantic модели API |
-| `services.py` | Реестр 15 заблокированных сервисов |
-| `versions.json` | Версии для системы обновлений |
+| `services.py` | Реестр сервисов с доменами |
+| `versions.json` | Версии для автообновлений |
 
-## Технические детали
+## Критические знания о zapret2
 
-- **zapret2** использует WinDivert на Windows → нужны права администратора
-- Стратегии подбираются по ISP: Ростелеком → fake+disorder, МТС → multidisorder, Билайн → multisplit
-- Конфиг = аргументы winws2 + hostlist доменов
-- Бинарники: winws2.exe, WinDivert.dll, WinDivert64.sys
+- **winws2** на Windows требует **cygwin1.dll** рядом с .exe
+- Lua-скрипты загружаются через `--lua-init=@file.lua` (НЕ `--lua=`)
+- Порядок: `--lua-init=@zapret-lib.lua` → `--lua-init=@zapret-antidpi.lua` → `--lua-desync=function:params`
+- WinDivert фильтры: `--wf-tcp-out=80,443`, `--wf-udp-out=443`
+- Профили разделяются через `--new`
+- Запуск только с правами администратора
 
-## Процесс сборки
+## Сборка Go клиента
 
 ```bash
-cd client
-build.bat   # скачает zapret2, соберёт .exe, скопирует в server/updates/
+cd client-go
+wails build -clean    # → build/bin/ZapretManager.exe (14 МБ)
 ```
 
-## Процесс обновления
+Требуется: Go 1.24+, Node.js, Wails CLI (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`).
 
-1. Изменить `client/version.py` (APP_VERSION / BINARIES_VERSION)
-2. `build.bat`
-3. Обновить `server/versions.json`
-4. Клиенты получат баннер "Доступно обновление"
+## Деплой сервера
 
-## Язык
+```bash
+python deploy.py      # полный деплой: clone + venv + systemd
+```
 
-- Интерфейс и комментарии на русском
-- Пользователи из России, ISP: Ростелеком, МТС, Билайн, Мегафон, Теле2, Дом.ру
-- Заблокированные сервисы: YouTube, Discord, Facebook, Instagram, X, Signal, Viber, LinkedIn и др.
+Быстрый редеплой (pull + restart):
+```bash
+python -c "
+import paramiko; ssh=paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect('5.42.120.247',username='root',password='c8,sCBZhqJa*t7')
+[print(ssh.exec_command(c)[1].read().decode()) for c in ['cd /opt/zapret-manager && git pull','systemctl restart zapret-manager']]
+ssh.close()
+"
+```
+
+## GitHub
+
+https://github.com/great105/zapret-manager (public)
 
 ## Стиль кода
 
-- Python 3.10+, type hints
-- Минимум зависимостей
-- Всё должно быть максимально просто для конечного пользователя
+- Go клиент: стандартный Go стиль, минимум зависимостей
+- Python сервер: FastAPI, type hints, Pydantic
+- Интерфейс и комментарии на русском
+- Максимальная простота для пользователя

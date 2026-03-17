@@ -10,7 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const ServerURL = "http://5.42.120.247:8000"
+const ServerURL = "https://5.42.120.247"
 const AppVersion = "2.0.0"
 
 // App — главная структура приложения
@@ -54,7 +54,23 @@ func (a *App) GetServices() []ServiceInfo {
 }
 
 // StartBypass — главная кнопка: диагностика → конфиг → запуск
-func (a *App) StartBypass() error {
+// selectedIDs — список ID сервисов, выбранных пользователем
+func (a *App) StartBypass(selectedIDs []string) error {
+	// Фильтруем сервисы по выбору пользователя
+	selected := make(map[string]bool)
+	for _, id := range selectedIDs {
+		selected[id] = true
+	}
+	var services []ServiceInfo
+	for _, svc := range DefaultServices {
+		if selected[svc.ID] {
+			services = append(services, svc)
+		}
+	}
+	if len(services) == 0 {
+		return fmt.Errorf("Не выбрано ни одного сервиса")
+	}
+
 	// 1. Извлечь/проверить бинарники
 	a.emit("progress", map[string]interface{}{"step": "binaries", "pct": 5, "text": "Проверка компонентов..."})
 	if err := a.zapret.EnsureBinaries(); err != nil {
@@ -67,10 +83,10 @@ func (a *App) StartBypass() error {
 		return fmt.Errorf("Сервер недоступен: %w", err)
 	}
 
-	// 3. Диагностика
-	results := make([]ServiceDiagResult, 0, len(DefaultServices))
-	for i, svc := range DefaultServices {
-		pct := 20 + int(float64(i)/float64(len(DefaultServices))*50)
+	// 3. Диагностика только выбранных
+	results := make([]ServiceDiagResult, 0, len(services))
+	for i, svc := range services {
+		pct := 20 + int(float64(i)/float64(len(services))*50)
 		a.emit("progress", map[string]interface{}{
 			"step": "diagnose", "pct": pct,
 			"text":      fmt.Sprintf("Проверка: %s", svc.Name),
@@ -79,7 +95,6 @@ func (a *App) StartBypass() error {
 		result := CheckService(svc)
 		results = append(results, result)
 
-		// Отправляем статус сервиса в UI
 		status := "ok"
 		if !result.TCPConnect || !result.TLSHandshake || result.Timeout {
 			status = "blocked"

@@ -32,16 +32,26 @@
             <span id="update-text"></span>
         </div>
 
-        <h3 class="section-title">Сервисы</h3>
+        <div class="section-header">
+            <h3 class="section-title">Сервисы</h3>
+            <div class="select-btns">
+                <button onclick="window.selectAll()" class="btn-select">Все</button>
+                <button onclick="window.selectNone()" class="btn-select">Ничего</button>
+            </div>
+        </div>
         <div id="services-list" class="services-list"></div>
 
-        <footer>v2.0 | Go + zapret2</footer>
+        <footer>v2.1 | Go + zapret2</footer>
     </div>
 
     <div id="error-modal" class="modal hidden">
         <div class="modal-content">
-            <p id="error-text"></p>
-            <button onclick="window.closeError()" class="btn-ok">OK</button>
+            <div class="error-header">Ошибка</div>
+            <textarea id="error-text" class="error-textarea" readonly></textarea>
+            <div class="error-buttons">
+                <button onclick="window.copyError()" class="btn-copy">Копировать</button>
+                <button onclick="window.closeError()" class="btn-ok">OK</button>
+            </div>
         </div>
     </div>
 

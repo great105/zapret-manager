@@ -3,31 +3,21 @@ import { GetServices, StartBypass, StopBypass, IsActive, CheckUpdate } from '../
 import { EventsOn } from '../wailsjs/runtime/runtime';
 
 let active = false;
+let allServices = [];
 
 // ── Init ─────────────────────────────────────────────────────────────
 
 async function init() {
-    // Load services list
-    const services = await GetServices();
-    const list = document.getElementById('services-list');
-    list.innerHTML = services.map(s => `
-        <div class="svc-row" id="svc-${s.id}">
-            <div class="svc-dot" id="dot-${s.id}"></div>
-            <span class="svc-name">${s.name}</span>
-            <span class="svc-status" id="st-${s.id}"></span>
-        </div>
-    `).join('');
+    allServices = await GetServices();
+    renderServices();
 
-    // Listen to events from Go
     EventsOn('progress', onProgress);
     EventsOn('serviceStatus', onServiceStatus);
     EventsOn('isp', onISP);
 
-    // Check if already active
     active = await IsActive();
     if (active) setActiveUI();
 
-    // Check updates in background
     try {
         const upd = await CheckUpdate();
         if (upd && upd.app_update) {
@@ -36,6 +26,33 @@ async function init() {
                 `Доступно обновление: v${upd.app_new_version}`;
         }
     } catch(e) {}
+}
+
+function renderServices() {
+    const list = document.getElementById('services-list');
+    list.innerHTML = allServices.map(s => `
+        <label class="svc-row" id="svc-${s.id}">
+            <input type="checkbox" class="svc-check" data-id="${s.id}" checked>
+            <div class="svc-dot" id="dot-${s.id}"></div>
+            <span class="svc-name">${s.name}</span>
+            <span class="svc-status" id="st-${s.id}"></span>
+        </label>
+    `).join('');
+}
+
+// ── Select all / none ────────────────────────────────────────────────
+
+window.selectAll = function() {
+    document.querySelectorAll('.svc-check').forEach(cb => cb.checked = true);
+};
+window.selectNone = function() {
+    document.querySelectorAll('.svc-check').forEach(cb => cb.checked = false);
+};
+
+function getSelectedIds() {
+    const ids = [];
+    document.querySelectorAll('.svc-check:checked').forEach(cb => ids.push(cb.dataset.id));
+    return ids;
 }
 
 // ── Main button ──────────────────────────────────────────────────────
@@ -49,15 +66,23 @@ window.onMainClick = async function() {
         return;
     }
 
+    const selected = getSelectedIds();
+    if (selected.length === 0) {
+        showError('Выберите хотя бы один сервис');
+        return;
+    }
+
     const btn = document.getElementById('main-btn');
     btn.disabled = true;
     btn.textContent = 'Подключение...';
     showProgress(true);
     setStatus('Настройка...', 'yellow');
-    markAllServices('check');
+
+    // Mark only selected as checking
+    selected.forEach(id => onServiceStatus({ id, status: 'check' }));
 
     try {
-        await StartBypass();
+        await StartBypass(selected);
         active = true;
         setActiveUI();
     } catch(err) {
@@ -71,10 +96,8 @@ window.onMainClick = async function() {
 // ── Events from Go ───────────────────────────────────────────────────
 
 function onProgress(data) {
-    const fill = document.getElementById('progress-fill');
-    const text = document.getElementById('progress-text');
-    fill.style.width = (data.pct || 0) + '%';
-    text.textContent = data.text || '';
+    document.getElementById('progress-fill').style.width = (data.pct || 0) + '%';
+    document.getElementById('progress-text').textContent = data.text || '';
 }
 
 function onServiceStatus(data) {
@@ -85,30 +108,15 @@ function onServiceStatus(data) {
     dot.className = 'svc-dot';
     st.className = 'svc-status';
 
-    switch(data.status) {
-        case 'ok':
-            dot.classList.add('green');
-            st.classList.add('green');
-            st.textContent = 'Доступен';
-            break;
-        case 'blocked':
-            dot.classList.add('red');
-            st.classList.add('red');
-            st.textContent = 'Заблокирован';
-            break;
-        case 'bypass':
-            dot.classList.add('green');
-            st.classList.add('green');
-            st.textContent = 'Обход активен';
-            break;
-        case 'check':
-            dot.classList.add('yellow');
-            st.classList.add('yellow');
-            st.textContent = 'Проверка...';
-            break;
-        default:
-            st.textContent = '';
-    }
+    const map = {
+        'ok':      ['green', 'Доступен'],
+        'blocked': ['red', 'Заблокирован'],
+        'bypass':  ['green', 'Обход активен'],
+        'check':   ['yellow', 'Проверка...'],
+    };
+    const [color, text] = map[data.status] || ['', ''];
+    if (color) { dot.classList.add(color); st.classList.add(color); }
+    st.textContent = text;
 }
 
 function onISP(data) {
@@ -131,6 +139,8 @@ function setActiveUI() {
     btn.textContent = 'Остановить';
     btn.classList.add('stop');
     setStatus('Обход активен', 'green');
+    // Disable checkboxes while active
+    document.querySelectorAll('.svc-check').forEach(cb => cb.disabled = true);
 }
 
 function setIdleUI() {
@@ -139,17 +149,11 @@ function setIdleUI() {
     btn.textContent = 'Обойти блокировки';
     btn.classList.remove('stop');
     setStatus('Готов к работе', '');
+    document.querySelectorAll('.svc-check').forEach(cb => cb.disabled = false);
 }
 
 function showProgress(show) {
     document.getElementById('progress-area').classList.toggle('hidden', !show);
-}
-
-function markAllServices(status) {
-    document.querySelectorAll('.svc-row').forEach(row => {
-        const id = row.id.replace('svc-', '');
-        onServiceStatus({ id, status });
-    });
 }
 
 function resetServices() {
@@ -159,13 +163,22 @@ function resetServices() {
 
 function showError(err) {
     const msg = typeof err === 'string' ? err : (err.message || err.toString());
-    document.getElementById('error-text').textContent = msg;
+    document.getElementById('error-text').value = msg;
     document.getElementById('error-modal').classList.remove('hidden');
 }
+
+window.copyError = function() {
+    const ta = document.getElementById('error-text');
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        btn.textContent = 'Скопировано';
+        setTimeout(() => btn.textContent = 'Копировать', 1500);
+    });
+};
 
 window.closeError = function() {
     document.getElementById('error-modal').classList.add('hidden');
 };
 
-// ── Start ────────────────────────────────────────────────────────────
 init();

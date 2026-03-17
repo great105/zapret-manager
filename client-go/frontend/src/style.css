@@ -88,7 +88,18 @@ header .subtitle { font-size: 12px; color: var(--dim); margin-top: 2px; }
 }
 
 /* Services list */
-.section-title { font-size: 13px; font-weight: 600; margin-top: 12px; margin-bottom: 4px; }
+.section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; margin-bottom: 4px;
+}
+.section-title { font-size: 13px; font-weight: 600; margin: 0; }
+.select-btns { display: flex; gap: 4px; }
+.btn-select {
+    padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px;
+    background: transparent; color: var(--dim); cursor: pointer; font-size: 10px;
+    --wails-draggable: none;
+}
+.btn-select:hover { border-color: var(--text); color: var(--text); }
 
 .services-list {
     flex: 1; overflow-y: auto; border-radius: 10px;
@@ -98,7 +109,12 @@ header .subtitle { font-size: 12px; color: var(--dim); margin-top: 2px; }
 
 .svc-row {
     display: flex; align-items: center; gap: 8px;
-    padding: 6px 14px; font-size: 13px;
+    padding: 5px 14px; font-size: 13px; cursor: pointer;
+}
+.svc-row:hover { background: rgba(255,255,255,0.03); }
+.svc-check {
+    width: 14px; height: 14px; accent-color: var(--green);
+    cursor: pointer; flex-shrink: 0;
 }
 .svc-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .svc-dot.green { background: var(--green); }
@@ -120,15 +136,32 @@ footer { font-size: 10px; color: var(--dim); text-align: center; padding: 6px 0;
     background: rgba(0,0,0,0.6);
     display: flex; align-items: center; justify-content: center;
     z-index: 100;
+    --wails-draggable: none;
+    user-select: text;
 }
 .modal-content {
     background: var(--card); border-radius: 12px;
-    padding: 24px; max-width: 340px; width: 90%;
+    padding: 20px; max-width: 380px; width: 90%;
     text-align: left; color: var(--text); font-size: 13px;
     line-height: 1.5;
+    --wails-draggable: none;
+    user-select: text;
 }
+.error-header { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.error-textarea {
+    width: 100%; min-height: 80px; max-height: 160px; resize: vertical;
+    background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; font-size: 12px; font-family: "Segoe UI", monospace;
+    line-height: 1.4; user-select: text; -webkit-user-select: text;
+    --wails-draggable: none; cursor: text;
+}
+.error-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.btn-copy {
+    padding: 6px 16px; border: 1px solid var(--border); border-radius: 8px;
+    background: transparent; color: var(--dim); cursor: pointer; font-size: 12px;
+}
+.btn-copy:hover { border-color: var(--text); color: var(--text); }
 .btn-ok {
-    display: block; margin: 16px auto 0;
     padding: 6px 24px; border: none; border-radius: 8px;
     background: var(--blue); color: var(--white);
     cursor: pointer; font-size: 13px;

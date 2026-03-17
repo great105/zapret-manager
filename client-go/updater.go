@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -29,7 +30,12 @@ func NewUpdater(serverURL, appDir string) *Updater {
 
 // Check — проверить обновления
 func (u *Updater) Check(currentAppVersion string) *UpdateInfo {
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 	resp, err := client.Get(u.serverURL + "/api/update/check")
 	if err != nil {
 		log.Printf("Update check failed: %v", err)

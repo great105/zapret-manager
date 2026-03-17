@@ -1,0 +1,4 @@
+customtkinter==5.2.2
+requests==2.32.0
+psutil==6.1.0
+pyinstaller==6.11.0

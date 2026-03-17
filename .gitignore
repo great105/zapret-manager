@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.log
+dist/
+build/
+*.spec
+*.egg-info/
+.env
+client/binaries/
+client/client_id.txt
+server/binaries/
+server/updates/

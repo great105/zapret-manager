@@ -22,8 +22,8 @@ export function IsActive() {
   return window['go']['main']['App']['IsActive']();
 }
 
-export function StartBypass() {
-  return window['go']['main']['App']['StartBypass']();
+export function StartBypass(arg1) {
+  return window['go']['main']['App']['StartBypass'](arg1);
 }
 
 export function StopBypass() {

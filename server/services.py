@@ -1,49 +1,76 @@
 """
 Реестр заблокированных сервисов в России.
-Каждый сервис содержит домены для проверки, порты и тип ожидаемой блокировки.
+
+bypass_method:
+  "dpi"  — блокировка через DPI, zapret2 может обойти
+  "ip"   — блокировка по IP, zapret2 НЕ поможет (нужен VPN/прокси)
+  "mixed"— DPI + частично IP, zapret2 может помочь частично
 """
 
 BLOCKED_SERVICES = [
-    # === Полная блокировка ===
-    {
-        "id": "discord",
-        "name": "Discord",
-        "icon": "💬",
-        "domains": [
-            "discord.com", "discordapp.com", "discord.gg", "discord.media",
-            "cdn.discordapp.com", "gateway.discord.gg", "media.discordapp.net",
-            "dl.discordapp.net", "images-ext-1.discordapp.net",
-            "images-ext-2.discordapp.net", "static.cloudflareinsights.com",
-            "status.discord.com", "router.discordapp.net",
-            "latency.discord.media", "update.discord.com",
-        ],
-        "test_domain": "discord.com",
-        "ports": {"tcp": [443, 80], "udp": [443]},
-        "blocking_type": "full",
-        "category": "messenger",
-    },
+    # ── DPI-блокировка / замедление (zapret2 помогает) ────────────────
     {
         "id": "youtube",
         "name": "YouTube",
         "icon": "▶",
         "domains": [
             "youtube.com", "www.youtube.com", "m.youtube.com",
-            "googlevideo.com", "ytimg.com", "yt3.ggpht.com",
-            "youtu.be", "yt.be",
+            "youtu.be", "yt.be", "googlevideo.com",
+            "ytimg.com", "yt3.ggpht.com", "yt3.googleusercontent.com",
+            "youtube-nocookie.com", "youtube-ui.l.google.com",
         ],
         "test_domain": "youtube.com",
         "ports": {"tcp": [443, 80], "udp": [443]},
         "blocking_type": "throttle",
+        "bypass_method": "dpi",
         "category": "video",
+    },
+    {
+        "id": "discord",
+        "name": "Discord",
+        "icon": "💬",
+        "domains": [
+            "discord.com", "discordapp.com", "discord.gg",
+            "discord.media", "discordapp.net", "discord.dev",
+            "cdn.discordapp.com", "gateway.discord.gg",
+            "media.discordapp.net", "dl.discordapp.net",
+            "images-ext-1.discordapp.net", "images-ext-2.discordapp.net",
+            "router.discordapp.net", "status.discord.com",
+            "update.discord.com", "latency.discord.media",
+            "dis.gd", "discord.new", "discord.gift",
+        ],
+        "test_domain": "discord.com",
+        "ports": {"tcp": [443, 80], "udp": [443]},
+        "blocking_type": "full",
+        "bypass_method": "dpi",
+        "category": "messenger",
+    },
+
+    # ── IP-блокировка (zapret2 может не помочь) ───────────────────────
+    {
+        "id": "telegram",
+        "name": "Telegram",
+        "icon": "📨",
+        "domains": [
+            "telegram.org", "t.me", "core.telegram.org",
+            "web.telegram.org", "desktop.telegram.org",
+            "updates.telegram.org", "telegram.me",
+        ],
+        "test_domain": "telegram.org",
+        "ports": {"tcp": [443, 80]},
+        "blocking_type": "full",
+        "bypass_method": "ip",
+        "category": "messenger",
     },
     {
         "id": "facebook",
         "name": "Facebook",
         "icon": "👤",
-        "domains": ["facebook.com", "www.facebook.com", "fbcdn.net", "fb.com"],
+        "domains": ["facebook.com", "www.facebook.com", "fbcdn.net", "fb.com", "fb.me"],
         "test_domain": "facebook.com",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "full",
+        "bypass_method": "ip",
         "category": "social",
     },
     {
@@ -54,6 +81,7 @@ BLOCKED_SERVICES = [
         "test_domain": "instagram.com",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "full",
+        "bypass_method": "ip",
         "category": "social",
     },
     {
@@ -64,17 +92,8 @@ BLOCKED_SERVICES = [
         "test_domain": "x.com",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "full",
+        "bypass_method": "mixed",
         "category": "social",
-    },
-    {
-        "id": "telegram_calls",
-        "name": "Telegram (звонки)",
-        "icon": "📞",
-        "domains": ["telegram.org", "t.me", "core.telegram.org"],
-        "test_domain": "telegram.org",
-        "ports": {"tcp": [443, 80], "udp": [443]},
-        "blocking_type": "partial",
-        "category": "messenger",
     },
     {
         "id": "signal",
@@ -84,16 +103,29 @@ BLOCKED_SERVICES = [
         "test_domain": "signal.org",
         "ports": {"tcp": [443]},
         "blocking_type": "full",
+        "bypass_method": "ip",
         "category": "messenger",
     },
     {
         "id": "viber",
         "name": "Viber",
         "icon": "📱",
-        "domains": ["viber.com", "www.viber.com"],
+        "domains": ["viber.com", "www.viber.com", "dl.viber.com"],
         "test_domain": "viber.com",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "full",
+        "bypass_method": "ip",
+        "category": "messenger",
+    },
+    {
+        "id": "whatsapp",
+        "name": "WhatsApp",
+        "icon": "📲",
+        "domains": ["whatsapp.com", "web.whatsapp.com", "www.whatsapp.com", "whatsapp.net"],
+        "test_domain": "web.whatsapp.com",
+        "ports": {"tcp": [443], "udp": [443]},
+        "blocking_type": "full",
+        "bypass_method": "ip",
         "category": "messenger",
     },
     {
@@ -104,6 +136,7 @@ BLOCKED_SERVICES = [
         "test_domain": "linkedin.com",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "full",
+        "bypass_method": "ip",
         "category": "social",
     },
     {
@@ -114,77 +147,71 @@ BLOCKED_SERVICES = [
         "test_domain": "snapchat.com",
         "ports": {"tcp": [443]},
         "blocking_type": "full",
+        "bypass_method": "ip",
         "category": "social",
-    },
-    {
-        "id": "whatsapp_calls",
-        "name": "WhatsApp (звонки)",
-        "icon": "📲",
-        "domains": ["whatsapp.com", "web.whatsapp.com", "www.whatsapp.com"],
-        "test_domain": "web.whatsapp.com",
-        "ports": {"tcp": [443], "udp": [443]},
-        "blocking_type": "partial",
-        "category": "messenger",
     },
     {
         "id": "chatgpt",
         "name": "ChatGPT",
         "icon": "🤖",
-        "domains": ["chat.openai.com", "openai.com", "api.openai.com"],
+        "domains": ["chat.openai.com", "openai.com", "api.openai.com", "cdn.oaistatic.com"],
         "test_domain": "chat.openai.com",
         "ports": {"tcp": [443]},
         "blocking_type": "throttle",
+        "bypass_method": "dpi",
         "category": "ai",
     },
     {
         "id": "roblox",
         "name": "Roblox",
         "icon": "🎮",
-        "domains": ["roblox.com", "www.roblox.com", "rbxcdn.com"],
+        "domains": ["roblox.com", "www.roblox.com", "rbxcdn.com", "roblox.qq.com"],
         "test_domain": "roblox.com",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "full",
+        "bypass_method": "dpi",
         "category": "gaming",
     },
     {
         "id": "twitch",
         "name": "Twitch",
         "icon": "🎥",
-        "domains": ["twitch.tv", "www.twitch.tv", "static.twitchcdn.net"],
+        "domains": ["twitch.tv", "www.twitch.tv", "static.twitchcdn.net", "usher.ttvnw.net"],
         "test_domain": "twitch.tv",
         "ports": {"tcp": [443, 80]},
         "blocking_type": "partial",
+        "bypass_method": "dpi",
         "category": "video",
     },
     {
         "id": "soundcloud",
         "name": "SoundCloud",
         "icon": "🎵",
-        "domains": ["soundcloud.com", "api-v2.soundcloud.com"],
+        "domains": ["soundcloud.com", "api-v2.soundcloud.com", "sndcdn.com"],
         "test_domain": "soundcloud.com",
         "ports": {"tcp": [443]},
         "blocking_type": "partial",
+        "bypass_method": "dpi",
         "category": "media",
     },
 ]
 
 
 def get_all_services():
-    """Вернуть все сервисы."""
     return BLOCKED_SERVICES
 
-
 def get_all_domains():
-    """Собрать все домены из всех сервисов в один плоский список."""
     domains = []
     for svc in BLOCKED_SERVICES:
         domains.extend(svc["domains"])
     return sorted(set(domains))
 
-
 def get_service_by_id(service_id: str):
-    """Найти сервис по ID."""
     for svc in BLOCKED_SERVICES:
         if svc["id"] == service_id:
             return svc
     return None
+
+def get_dpi_bypassable_services():
+    """Сервисы, которые можно обойти через DPI desync."""
+    return [s for s in BLOCKED_SERVICES if s["bypass_method"] in ("dpi", "mixed")]

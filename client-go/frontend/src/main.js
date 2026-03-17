@@ -30,14 +30,30 @@ async function init() {
 
 function renderServices() {
     const list = document.getElementById('services-list');
-    list.innerHTML = allServices.map(s => `
-        <label class="svc-row" id="svc-${s.id}">
-            <input type="checkbox" class="svc-check" data-id="${s.id}" checked>
+    const dpi = allServices.filter(s => s.bypass_method === 'dpi' || s.bypass_method === 'mixed');
+    const ip = allServices.filter(s => s.bypass_method === 'ip');
+
+    let html = '';
+    if (dpi.length) {
+        html += '<div class="svc-group-label">Обход через zapret2</div>';
+        html += dpi.map(s => svcRow(s, true)).join('');
+    }
+    if (ip.length) {
+        html += '<div class="svc-group-label dim">Нужен VPN (IP-блокировка)</div>';
+        html += ip.map(s => svcRow(s, false)).join('');
+    }
+    list.innerHTML = html;
+}
+
+function svcRow(s, canBypass) {
+    const tag = !canBypass ? '<span class="svc-tag">VPN</span>' : '';
+    return `
+        <label class="svc-row ${!canBypass ? 'svc-ip' : ''}" id="svc-${s.id}">
+            <input type="checkbox" class="svc-check" data-id="${s.id}" ${canBypass ? 'checked' : ''}>
             <div class="svc-dot" id="dot-${s.id}"></div>
-            <span class="svc-name">${s.name}</span>
+            <span class="svc-name">${s.name}${tag}</span>
             <span class="svc-status" id="st-${s.id}"></span>
-        </label>
-    `).join('');
+        </label>`;
 }
 
 // ── Select all / none ────────────────────────────────────────────────

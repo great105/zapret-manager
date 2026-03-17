@@ -12,6 +12,6 @@ export function GetServices():Promise<Array<main.ServiceInfo>>;
 
 export function IsActive():Promise<boolean>;
 
-export function StartBypass():Promise<void>;
+export function StartBypass(arg1:Array<string>):Promise<void>;
 
 export function StopBypass():Promise<void>;

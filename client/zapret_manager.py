@@ -51,6 +51,7 @@ class ZapretManager:
         self.winws2_exe = self.zapret_dir / "winws2.exe"
         self.windivert_dll = self.zapret_dir / "WinDivert.dll"
         self.windivert_sys = self.zapret_dir / "WinDivert64.sys"
+        self.cygwin_dll = self.zapret_dir / "cygwin1.dll"
         self.hostlist_file = self.zapret_dir / "hostlist.txt"
         self.config_file = self.zapret_dir / "current_config.json"
 
@@ -63,6 +64,7 @@ class ZapretManager:
             "winws2.exe": self.winws2_exe.exists(),
             "WinDivert.dll": self.windivert_dll.exists(),
             "WinDivert64.sys": self.windivert_sys.exists(),
+            "cygwin1.dll": self.cygwin_dll.exists(),
         }
 
     def is_ready(self) -> bool:

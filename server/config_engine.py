@@ -300,8 +300,9 @@ def generate_config(report: DiagnosticReport) -> ConfigResponse:
     # Собираем аргументы winws2
     winws2_args: list[str] = []
 
-    # Lua-скрипт с функциями desync (обязательно первым!)
-    winws2_args.append("--lua=zapret-antidpi.lua")
+    # Lua-скрипты (обязательно первыми! @ = загрузка из файла)
+    winws2_args.append("--lua-init=@zapret-lib.lua")
+    winws2_args.append("--lua-init=@zapret-antidpi.lua")
 
     # WinDivert фильтры (Windows-специфичные)
     wf_parts = []

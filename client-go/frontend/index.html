@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapret Manager</title>
+    <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Zapret Manager</h1>
+            <p class="subtitle">Обход интернет-блокировок</p>
+        </header>
+
+        <div id="status-bar" class="status-bar">
+            <span id="status-dot" class="dot"></span>
+            <span id="status-text">Готов к работе</span>
+            <span id="isp-name" class="isp"></span>
+        </div>
+
+        <button id="main-btn" class="btn-main" onclick="window.onMainClick()">
+            Обойти блокировки
+        </button>
+
+        <div id="progress-area" class="progress-area hidden">
+            <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+            <span id="progress-text" class="progress-text"></span>
+        </div>
+
+        <div id="update-banner" class="update-banner hidden">
+            <span id="update-text"></span>
+        </div>
+
+        <h3 class="section-title">Сервисы</h3>
+        <div id="services-list" class="services-list"></div>
+
+        <footer>v2.0 | Go + zapret2</footer>
+    </div>
+
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <p id="error-text"></p>
+            <button onclick="window.closeError()" class="btn-ok">OK</button>
+        </div>
+    </div>
+
+    <script src="./src/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --orange: #db6d28;
+    --blue: #58a6ff;
+    --text: #e6edf3;
+    --dim: #8b949e;
+    --white: #fff;
+    --btn: #238636;
+    --btn-hover: #2ea043;
+    --btn-stop: #da3633;
+    --btn-stop-hover: #b62324;
+}
+
+html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    height: 100%;
+    overflow: hidden;
+    user-select: none;
+    --wails-draggable: drag;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px 20px;
+}
+
+header {
+    --wails-draggable: drag;
+}
+header h1 { font-size: 22px; font-weight: 700; color: var(--white); }
+header .subtitle { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Status bar */
+.status-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border-radius: 10px;
+    padding: 8px 14px; margin-top: 12px;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+.dot.green { background: var(--green); }
+.dot.red { background: var(--red); }
+.dot.yellow { background: var(--yellow); }
+#status-text { flex: 1; font-size: 12px; color: var(--dim); }
+.isp { font-size: 11px; color: var(--dim); }
+
+/* Main button */
+.btn-main {
+    width: 100%; padding: 14px; margin-top: 14px;
+    border: none; border-radius: 12px; cursor: pointer;
+    font-size: 16px; font-weight: 700; color: var(--white);
+    background: var(--btn); transition: background 0.2s;
+}
+.btn-main:hover { background: var(--btn-hover); }
+.btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-main.stop { background: var(--btn-stop); }
+.btn-main.stop:hover { background: var(--btn-stop-hover); }
+
+/* Progress */
+.progress-area { margin-top: 10px; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.3s; }
+.progress-text { font-size: 11px; color: var(--dim); display: block; margin-top: 4px; }
+
+/* Update banner */
+.update-banner {
+    display: flex; align-items: center; gap: 8px;
+    background: #1c3a13; border-radius: 8px;
+    padding: 8px 14px; margin-top: 8px;
+    font-size: 12px; color: var(--green);
+}
+.btn-update {
+    margin-left: auto; padding: 4px 12px;
+    border: none; border-radius: 6px; cursor: pointer;
+    font-size: 11px; color: var(--white);
+    background: var(--btn);
+}
+
+/* Services list */
+.section-title { font-size: 13px; font-weight: 600; margin-top: 12px; margin-bottom: 4px; }
+
+.services-list {
+    flex: 1; overflow-y: auto; border-radius: 10px;
+    background: var(--card); padding: 4px 0;
+    --wails-draggable: none;
+}
+
+.svc-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px; font-size: 13px;
+}
+.svc-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.svc-dot.green { background: var(--green); }
+.svc-dot.red { background: var(--red); }
+.svc-dot.yellow { background: var(--yellow); }
+.svc-dot.orange { background: var(--orange); }
+.svc-name { flex: 1; }
+.svc-status { font-size: 11px; color: var(--dim); }
+.svc-status.green { color: var(--green); }
+.svc-status.red { color: var(--red); }
+.svc-status.yellow { color: var(--yellow); }
+
+/* Footer */
+footer { font-size: 10px; color: var(--dim); text-align: center; padding: 6px 0; }
+
+/* Modal */
+.modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+}
+.modal-content {
+    background: var(--card); border-radius: 12px;
+    padding: 24px; max-width: 340px; width: 90%;
+    text-align: left; color: var(--text); font-size: 13px;
+    line-height: 1.5;
+}
+.btn-ok {
+    display: block; margin: 16px auto 0;
+    padding: 6px 24px; border: none; border-radius: 8px;
+    background: var(--blue); color: var(--white);
+    cursor: pointer; font-size: 13px;
+}
+
+.hidden { display: none !important; }
+
+/* Scrollbar */
+.services-list::-webkit-scrollbar { width: 4px; }
+.services-list::-webkit-scrollbar-track { background: transparent; }
+.services-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }

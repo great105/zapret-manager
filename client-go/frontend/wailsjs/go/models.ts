@@ -25,6 +25,7 @@ export namespace main {
 	    name: string;
 	    test_domain: string;
 	    blocking_type: string;
+	    bypass_method: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ServiceInfo(source);
@@ -36,6 +37,7 @@ export namespace main {
 	        this.name = source["name"];
 	        this.test_domain = source["test_domain"];
 	        this.blocking_type = source["blocking_type"];
+	        this.bypass_method = source["bypass_method"];
 	    }
 	}
 	export class UpdateInfo {

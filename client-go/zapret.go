@@ -104,16 +104,31 @@ func (z *ZapretManager) Start(args []string) error {
 		CreationFlags: 0x08000000, // CREATE_NO_WINDOW
 	}
 
+	// Захватываем stderr для диагностики
+	stderrPipe, _ := z.cmd.StderrPipe()
+	stdoutPipe, _ := z.cmd.StdoutPipe()
+
 	if err := z.cmd.Start(); err != nil {
 		return fmt.Errorf("start winws2: %w", err)
 	}
 
 	// Даём время на инициализацию
-	time.Sleep(1500 * time.Millisecond)
+	time.Sleep(2 * time.Second)
 
-	// Проверяем, не упал ли
+	// Проверяем, не упал ли — читаем вывод
+	if z.cmd.Process == nil {
+		return fmt.Errorf("winws2 process is nil")
+	}
+
+	// Проверяем жив ли процесс
 	if z.cmd.ProcessState != nil && z.cmd.ProcessState.Exited() {
-		return fmt.Errorf("winws2 exited immediately")
+		// Читаем ошибку
+		errBytes := make([]byte, 2048)
+		n, _ := stderrPipe.Read(errBytes)
+		outBytes := make([]byte, 2048)
+		m, _ := stdoutPipe.Read(outBytes)
+		errMsg := string(errBytes[:n]) + string(outBytes[:m])
+		return fmt.Errorf("winws2 exited: %s", errMsg)
 	}
 
 	log.Printf("winws2 started, PID=%d", z.cmd.Process.Pid)
